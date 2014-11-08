@@ -101,6 +101,17 @@ public real kolm(list[num] nums, real beta) {
 	}
 }
 
+@doc{The Simpson and Blau diversity indices assume that the values being aggregated are percentages, i.e., 
+their sum is 1 and each one of these values is between 0 and 1. We normalize the 
+values by dividing them by sum(nums).} 
+public real simpson(list[num] nums) {
+	if (size(nums) < 1)
+		throw "Diversity indices cannot be computed for empty collections of values"; 	
+	s = sum(nums);
+	return 1.0/(s*s) * (0.0 | it + x*x | x <- nums);
+}
+public real blau(list[num] nums) = 1.0 - simpson(nums);
+
 // not tested
 @doc{Default values in Squale}
 public real squaleSoft(list[num] nums) = squale(nums, 3.0);
@@ -182,4 +193,12 @@ test bool squaleKolm(list[num] nums, real lambda) {
 	if (lambda == 1) return true;
 	if (lambda < 0) return true;
 	return squale(nums, lambda) + kolm(nums, ln(lambda)) == mean(nums); 
+}
+test bool simpsonLo(list[num] nums) {
+	if (size(nums) < 1) return true;
+	return simpson(nums) >= 0;
+}
+test bool simpsonHi(list[num] nums) {
+	if (size(nums) < 1) return true;
+	return simpson(nums) <= 1;
 }

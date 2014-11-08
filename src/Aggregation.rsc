@@ -34,8 +34,9 @@ private bool atLeastTwo(list[num] nums) {
 public real gini(list[num] nums) {
 	if (atLeastTwo(nums)) {
 		n = count(nums);
+		s = sum(nums);
 		x = (0.0 | it + toReal(abs(xi-xj)) | xi <- nums, xj <- nums);
-		return 1.0/(2*n*n*mean(nums)) * x;
+		return 1.0/(2*n*s) * x;
 	}
 }
 
@@ -86,8 +87,8 @@ public real hoover(list[num] nums) {
 		if (m == 0) {
 			throw ArithmeticException("Hoover inequality index cannot be computed when the mean is zero.");	 
 		}
-		n = count(nums);
-		return 1.0/(2*n*m) * (0.0 | it + abs(xi-m) | xi <- nums);
+		s = sum(nums);
+		return 1.0/(2*s) * (0.0 | it + abs(xi-m) | xi <- nums);
 	}
 }
 @doc{The default value for the beta parameter in Kolm is the same as in R.}
@@ -105,10 +106,12 @@ public real kolm(list[num] nums, real beta) {
 their sum is 1 and each one of these values is between 0 and 1. We normalize the 
 values by dividing them by sum(nums).} 
 public real simpson(list[num] nums) {
-	if (size(nums) < 1)
-		throw "Diversity indices cannot be computed for empty collections of values"; 	
+	if (size(nums) < 1) {
+		throw "Diversity indices cannot be computed for empty collections of values"; 
+	}		
 	s = sum(nums);
-	return 1.0/(s*s) * (0.0 | it + x*x | x <- nums);
+	t =  (0.0 | it + x*x | x <- nums);
+	return 1.0/(s*s) * t;
 }
 public real blau(list[num] nums) = 1.0 - simpson(nums);
 
@@ -196,9 +199,9 @@ test bool squaleKolm(list[num] nums, real lambda) {
 }
 test bool simpsonLo(list[num] nums) {
 	if (size(nums) < 1) return true;
-	return simpson(nums) >= 0;
+	return simpson(nums) >= 0.0;
 }
 test bool simpsonHi(list[num] nums) {
 	if (size(nums) < 1) return true;
-	return simpson(nums) <= 1;
+	return simpson(nums) <= 1.0;
 }

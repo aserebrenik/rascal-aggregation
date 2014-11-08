@@ -111,7 +111,7 @@ public real simpson(list[num] nums) {
 	}		
 	s = sum(nums);
 	t =  (0.0 | it + x*x | x <- nums);
-	return 1.0/(s*s) * t;
+	return toReal(1.0/(s*s) * t);
 }
 public real blau(list[num] nums) = 1.0 - simpson(nums);
 

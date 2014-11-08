@@ -68,15 +68,14 @@ public default real generalizedEntropy(list[num] nums, real alpha) {
 }
 
 @docs{Atkinson's inequality index. We use the same default value for the parameter as R.} 
-public real atkinson(list[num] nums) = atkinson(nums, 0.5);
 //not tested
-public real atkinson(list[num] nums, real alpha) {
+public real atkinson(list[num] nums, real alpha = 0.5) {
 	if (phi(nums) && atLeastTwo(nums)) {
 		m = mean(nums);
 		n = count(nums);
-		return 1 - 1/m *
-				pow((1/n * ( 0.0 | it + pow(x, 1 - alpha) | x <- nums)),
-				1/(1-alpha));
+		return 1 - 1.0/m *
+				pow((1.0/n * ( 0.0 | it + pow(x, 1.0 - alpha) | x <- nums)),
+				1.0/(1.0-alpha));
 	}
 }
 @doc{Hoover (also known as the Ricci–Schutz coefficient, or the Robin Hood index). RS in R.}
@@ -92,8 +91,7 @@ public real hoover(list[num] nums) {
 	}
 }
 @doc{The default value for the beta parameter in Kolm is the same as in R.}
-public real kolm(list[num] nums) = kolm(nums, 1.0);
-public real kolm(list[num] nums, real beta) {
+public real kolm(list[num] nums, real beta = 1.0) {
 	if (atLeastTwo(nums)) {
 		m = mean(nums);
 		return 1.0/beta * 
@@ -128,8 +126,8 @@ public real squale(list[num] nums, real lambda) {
 			throw ArithmeticException("Squale inequality index is not defined for lambda == 1.");	 
 	}	
 	if (atLeastTwo(nums)) {
-		t = (0.0 | it + pow(lambda, -x) | x <- nums);
-		return -log(1/count(nums) * t, lambda);
+		t = (0.0 | it + pow(lambda, toReal(-x)) | x <- nums);
+		return -log(1.0/count(nums) * t, lambda);
 	}
 }
 

@@ -90,8 +90,13 @@ public real hoover(list[num] nums) {
 		return 1.0/(2*s) * (0.0 | it + abs(xi-m) | xi <- nums);
 	}
 }
-@doc{The default value for the beta parameter in Kolm is the same as in R.}
+@doc{The default value for the beta parameter in Kolm is the same as in R.
+The index has been introduced in Serge-Christophe Kolm: Unequal inequalities I. 
+Journal of Economic Theory 12(1976):416–442}
 public real kolm(list[num] nums, real beta = 1.0) {
+	if (beta <= 0.0) {
+		throw ArithmeticException("Kolm index is defined only for beta greater than zero.");
+	}
 	if (atLeastTwo(nums)) {
 		m = mean(nums);
 		return 1.0/beta * 
@@ -170,6 +175,7 @@ test bool hooverIsInRange(list[num] nums) {
 }
 test bool kolmIsNonneg(list[num] nums) {
 	if (size(nums) < 2) return true;
+	if (max(nums) > 500) return true; //otherwise the computation of Kolm can take too long
 	return kolm(nums) >= 0;
 }
 test bool squaleRangeLo(list[num] nums, real lambda) {
@@ -191,6 +197,7 @@ test bool squaleRangeInv(list[num] nums, real lambda, real c) {
 }
 test bool squaleKolm(list[num] nums, real lambda) {
 	if (size(nums) < 2) return true;
+	if (max(nums) > 500) return true; //otherwise the computation of Kolm can take too long
 	if (lambda == 1) return true;
 	if (lambda < 0) return true;
 	return squale(nums, lambda) + kolm(nums, ln(lambda)) == mean(nums); 

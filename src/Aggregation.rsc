@@ -143,55 +143,68 @@ test bool correctTheilT() {
 
 test bool theilTNeverTooSmall(list[num] nums) {
 	if (size(nums) < 2) return true;
+	nums = makeSmallerThan(nums, 500);
 	nums = [abs(n) | n <- nums];
 	return theilT(nums) >= 0;
 }
 test bool theilTNeverTooLarge(list[num] nums) {
 	if (size(nums) < 2) return true;
+	nums = makeSmallerThan(nums, 500);
 	nums = [abs(n) | n <- nums];
 
 	return theilT(nums) < ln(count(nums));
 }
 test bool theilNotSensitiveToZeroes(list[num] nums) {
 	if (size(nums) < 2) return true;
+	nums = makeSmallerThan(nums, 500);
 	nums = [abs(n) | n <- nums];
 
 	return theilT(nums) == theilT(nums+[0,0,0]);
 }
 test bool giniNeverTooSmall(list[num] nums) {
 	if (size(nums) < 2) return true;
+	nums = makeSmallerThan(nums, 500);
 	nums = [abs(n) | n <- nums];
 	return gini(nums) >= 0;
 }
 test bool giniNeverTooLarge(list[num] nums) {
 	if (size(nums) < 2) return true;
+	nums = makeSmallerThan(nums, 500);
 	nums = [abs(n) | n <- nums];
 	return gini(nums) < (1 - 1.0/(count(nums)));
 }
 test bool hooverIsInRange(list[num] nums) {
 	if (size(nums) < 2) return true;
+	nums = makeSmallerThan(nums, 500);
 	if (phi(nums))
 		return (hoover(nums) >= 0 && hoover(nums) <= 1);
 }
 test bool kolmIsNonneg(list[num] nums) {
 	if (size(nums) < 2) return true;
-	if (max(nums) > 500) return true; //otherwise the computation of Kolm can take too long
+	nums = makeSmallerThan(nums, 500);
 	return kolm(nums) >= 0;
 }
 test bool squaleRangeLo(list[num] nums, real lambda) {
 	if (size(nums) < 2) return true;
 	if (lambda <= 1) return true;
+	nums = makeSmallerThan(nums, 500);
+	lambda = makeSmallerThan(lambda, 5);
 	return min(nums) <= squale(nums, lambda); 
 }
 test bool squaleRangeHi(list[num] nums, real lambda) {
 	if (size(nums) < 2) return true;
 	if (lambda <= 1) return true;
+	nums = makeSmallerThan(nums, 500);
+	lambda = makeSmallerThan(lambda, 5);
 	return mean(nums) >= squale(nums, lambda); 
 }
 test bool squaleRangeInv(list[num] nums, real lambda, real c) {
 	if (size(nums) < 2) return true;
 	if (lambda == 1) return true;
 	if (lambda < 0) return true;
+	nums = makeSmallerThan(nums, 500);
+	lambda = makeSmallerThan(lambda, 5);
+	c = makeSmallerThan(c, 5);
 	cnums = [n+c| n<- nums];
 	return squale(cnums, lambda) == squale(nums, lambda) + c; 
 }
@@ -200,13 +213,39 @@ test bool squaleKolm(list[num] nums, real lambda) {
 	if (max(nums) > 500) return true; //otherwise the computation of Kolm can take too long
 	if (lambda == 1) return true;
 	if (lambda < 0) return true;
+	nums = makeSmallerThan(nums, 500);
+	lambda = makeSmallerThan(lambda, 5);
 	return squale(nums, lambda) + kolm(nums, ln(lambda)) == mean(nums); 
 }
 test bool simpsonLo(list[num] nums) {
 	if (size(nums) < 1) return true;
+	nums = makeSmallerThan(nums, 500);
 	return simpson(nums) >= 0.0;
 }
 test bool simpsonHi(list[num] nums) {
 	if (size(nums) < 1) return true;
+	nums = makeSmallerThan(nums, 500);
 	return simpson(nums) <= 1.0;
 }
+
+
+private (&T<:int) makeSmallerThan(&T <: int n, int limit) = n % limit;
+private (&T<:real) makeSmallerThan(&T <: real n, int limit) {
+	if (abs(n) < limit) {
+		return n;
+	}
+	f = trunc(n);
+	r = n - f;
+	return (f % limit) + r;
+}
+private (&T<:rat) makeSmallerThan(&T <: rat n, int limit) {
+	if (abs(n) < limit) {
+		return n;
+	}
+	return toRat(1, denominator(n));
+}
+
+
+list[num] makeSmallerThan(list[num] nums, int limit) 
+	= [ makeSmallerThan(n, limit) | n <- nums]
+

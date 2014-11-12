@@ -8,7 +8,7 @@ import util::Math;
 public int count(list[num] nums) = size(nums);
 
 //public real sum(list[real] nums) = ( 0 | it + n | n <- nums);
-public num sum(list[num] nums) = ( 0 | it + n | n <- nums);
+//public num sum(list[num] nums) = ( 0 | it + n | n <- nums);
 
 public real mean(list[num] nums) = toReal(sum(nums)) / count(nums);
 @doc{
@@ -42,6 +42,7 @@ public real gini(list[num] nums) {
 
 public real theilT(list[num] nums) {
 	if (phi(nums) && atLeastTwo(nums)) {
+		nums = [x|x<- nums, x > 0]; //otherwise ln will be undefined for x <= 0
 		m = mean(nums);
 		return 1.0/count(nums) * ( 0.0 | it + (x/m * ln(x/m)) | x <- nums);
 	}
@@ -52,6 +53,7 @@ public real MLD(list[num] nums) = theilL(nums);
 
 public real theilL(list[num] nums) {
 	if (phi(nums) && atLeastTwo(nums)) {
+		nums = [x|x<- nums, x > 0]; //otherwise ln will be undefined for x <= 0
 		m = mean(nums);
 		return 1.0/count(nums) * ( 0.0 | it + ln(m/x) | x <- nums);
 	}
@@ -112,9 +114,11 @@ public real simpson(list[num] nums) {
 	if (size(nums) < 1) {
 		throw "Diversity indices cannot be computed for empty collections of values"; 
 	}		
-	s = sum(nums);
-	t =  (0.0 | it + x*x | x <- nums);
-	return toReal(1.0/(s*s) * t);
+	if (phi(nums))	{
+		s = sum(nums);
+		t =  (0.0 | it + x*x | x <- nums);
+		return toReal(1.0/(s*s) * t);
+	}	
 }
 public real blau(list[num] nums) = 1.0 - simpson(nums);
 
@@ -176,6 +180,7 @@ test bool giniNeverTooLarge(list[num] nums) {
 test bool hooverIsInRange(list[num] nums) {
 	if (size(nums) < 2) return true;
 	nums = makeSmallerThan(nums, 500);
+	nums = [abs(n) | n <- nums];
 	if (phi(nums))
 		return (hoover(nums) >= 0 && hoover(nums) <= 1);
 }
@@ -203,7 +208,7 @@ test bool squaleRangeInv(list[num] nums, real lambda, real c) {
 	if (lambda == 1) return true;
 	if (lambda < 0) return true;
 	nums = makeSmallerThan(nums, 500);
-	lambda = makeSmallerThan(lambda, 5);
+	lambda = makeSmallerThan(lambda, 10);
 	c = makeSmallerThan(c, 5);
 	cnums = [n+c| n<- nums];
 	return squale(cnums, lambda) == squale(nums, lambda) + c; 
@@ -214,18 +219,31 @@ test bool squaleKolm(list[num] nums, real lambda) {
 	if (lambda == 1) return true;
 	if (lambda < 0) return true;
 	nums = makeSmallerThan(nums, 500);
-	lambda = makeSmallerThan(lambda, 5);
-	return squale(nums, lambda) + kolm(nums, ln(lambda)) == mean(nums); 
+	lambda = makeSmallerThan(lambda, 10);
+	return squale(nums, lambda) + kolm(nums, beta = ln(lambda)) == mean(nums); 
 }
 test bool simpsonLo(list[num] nums) {
 	if (size(nums) < 1) return true;
+	nums = [abs(n) | n <- nums];
 	nums = makeSmallerThan(nums, 500);
+	nums = prepareDiversityIndex(nums);
 	return simpson(nums) >= 0.0;
 }
 test bool simpsonHi(list[num] nums) {
 	if (size(nums) < 1) return true;
+	nums = [abs(n) | n <- nums];
 	nums = makeSmallerThan(nums, 500);
+	nums = prepareDiversityIndex(nums);
 	return simpson(nums) <= 1.0;
+}
+
+@doc{Diversity indices assume that the values are percentages}
+private list[num] prepareDiversityIndex(list[num] nums) {
+	if (size(nums) >= 1) {
+		s = sum(nums);
+		nums = [toReal(n/s) | n <- nums];
+		return nums;
+	} 
 }
 
 
@@ -247,5 +265,5 @@ private (&T<:rat) makeSmallerThan(&T <: rat n, int limit) {
 
 
 list[num] makeSmallerThan(list[num] nums, int limit) 
-	= [ makeSmallerThan(n, limit) | n <- nums]
-
+	= [ makeSmallerThan(n, limit) | n <- nums];
+	
